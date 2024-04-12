@@ -8,10 +8,11 @@ import { Button } from '@affine/component/ui/button';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { Trans } from '@affine/i18n';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useLiveData, useService } from '@toeverything/infra';
 import type { FC } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 
-import { useCurrentLoginStatus } from '../../../hooks/affine/use-current-login-status';
+import { AffineCloudAuthService } from '../../../modules/cloud';
 import type { AuthPanelProps } from './index';
 import * as style from './style.css';
 import { useAuth } from './use-auth';
@@ -23,7 +24,17 @@ export const AfterSignUpSendEmail: FC<AuthPanelProps> = ({
   onSignedIn,
 }) => {
   const t = useAFFiNEI18N();
-  const loginStatus = useCurrentLoginStatus();
+  const session = useService(AffineCloudAuthService).session;
+  const loginStatus = useLiveData(session.status$);
+  useEffect(() => {
+    const timeout = setInterval(() => {
+      // revalidate session to get the latest status
+      session.revalidate(true);
+    }, 1000);
+    return () => {
+      clearInterval(timeout);
+    };
+  }, [session]);
   const [verifyToken, challenge] = useCaptcha();
 
   const { resendCountDown, allowSendEmail, signUp } = useAuth();

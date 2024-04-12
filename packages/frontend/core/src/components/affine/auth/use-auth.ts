@@ -4,7 +4,6 @@ import { atom, useAtom, useSetAtom } from 'jotai';
 import { useCallback } from 'react';
 
 import { signInCloud } from '../../../utils/cloud-utils';
-import { useSubscriptionSearch } from './use-subscription';
 
 const COUNT_DOWN_TIME = 60;
 export const INTERNAL_BETA_URL = `https://community.affine.pro/c/insider-general/`;
@@ -45,7 +44,6 @@ const countDownAtom = atom(
 );
 
 export const useAuth = () => {
-  const subscriptionData = useSubscriptionSearch();
   const [authStore, setAuthStore] = useAtom(authStoreAtom);
   const startResendCountDown = useSetAtom(countDownAtom);
 
@@ -75,9 +73,7 @@ export const useAuth = () => {
                 token: verifyToken,
               }
             : { token: verifyToken }),
-          callbackUrl: subscriptionData
-            ? subscriptionData.getRedirectUrl(signUp)
-            : '/auth/signIn',
+          callbackUrl: signUp ? '/auth/signUp' : '/auth/signIn',
         }
       ).catch(console.error);
 
@@ -100,7 +96,7 @@ export const useAuth = () => {
 
       return res;
     },
-    [setAuthStore, startResendCountDown, subscriptionData]
+    [setAuthStore, startResendCountDown]
   );
 
   const signUp = useCallback(

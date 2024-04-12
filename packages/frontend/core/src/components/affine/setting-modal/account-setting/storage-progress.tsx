@@ -1,9 +1,14 @@
 import { Button, Tooltip } from '@affine/component';
-import { useCloudStorageUsage } from '@affine/core/hooks/affine/use-cloud-storage-usage';
 import { SubscriptionPlan } from '@affine/graphql';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { useMemo } from 'react';
+import { useLiveData, useService } from '@toeverything/infra';
+import { cssVar } from '@toeverything/theme';
+import { useEffect, useMemo } from 'react';
 
+import {
+  AffineCloudSubscriptionService,
+  AffineCloudUserQuotaService,
+} from '../../../../modules/cloud';
 import * as styles from './storage-progress.css';
 
 export interface StorageProgressProgress {
@@ -21,8 +26,24 @@ export const StorageProgress = ({
   onUpgrade,
 }: StorageProgressProgress) => {
   const t = useAFFiNEI18N();
-  const { plan, usedText, color, percent, maxLimitText } =
-    useCloudStorageUsage();
+  const quota = useService(AffineCloudUserQuotaService).quota;
+
+  useEffect(() => {
+    // revalidate quota to get the latest status
+    quota.revalidate();
+  }, [quota]);
+  const color = useLiveData(quota.color$);
+  const usedFormatted = useLiveData(quota.usedFormatted$);
+  const maxFormatted = useLiveData(quota.maxFormatted$);
+  const percent = useLiveData(quota.percent$);
+
+  const subscription = useService(AffineCloudSubscriptionService).subscription;
+  useEffect(() => {
+    // revalidate subscription to get the latest status
+    subscription.revalidate();
+  }, [subscription]);
+
+  const plan = useLiveData(subscription.primary$.map(sub => sub?.plan));
 
   const buttonType = useMemo(() => {
     if (plan === SubscriptionPlan.Free) {
@@ -31,13 +52,18 @@ export const StorageProgress = ({
     return ButtonType.Default;
   }, [plan]);
 
+  if (!plan || percent == null) {
+    // TODO: loading UI
+    return null;
+  }
+
   return (
     <div className={styles.storageProgressContainer}>
       <div className={styles.storageProgressWrapper}>
         <div className="storage-progress-desc">
           <span>{t['com.affine.storage.used.hint']()}</span>
           <span>
-            {usedText}/{maxLimitText}
+            {usedFormatted}/{maxFormatted}
             {` (${plan} ${t['com.affine.storage.plan']()})`}
           </span>
         </div>
@@ -45,7 +71,10 @@ export const StorageProgress = ({
         <div className="storage-progress-bar-wrapper">
           <div
             className={styles.storageProgressBar}
-            style={{ width: `${percent}%`, backgroundColor: color }}
+            style={{
+              width: `${percent}%`,
+              backgroundColor: color ?? cssVar('processingColor'),
+            }}
           ></div>
         </div>
       </div>

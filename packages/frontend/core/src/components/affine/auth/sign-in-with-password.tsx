@@ -14,7 +14,7 @@ import { useCallback, useState } from 'react';
 import { signInCloud } from '../../../utils/cloud-utils';
 import type { AuthPanelProps } from './index';
 import * as styles from './style.css';
-import { INTERNAL_BETA_URL, useAuth } from './use-auth';
+import { useAuth } from './use-auth';
 import { useCaptcha } from './use-captcha';
 
 export const SignInWithPassword: FC<AuthPanelProps> = ({
@@ -28,12 +28,7 @@ export const SignInWithPassword: FC<AuthPanelProps> = ({
 
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
-  const {
-    signIn,
-    allowSendEmail,
-    resetCountDown,
-    isMutating: sendingEmail,
-  } = useAuth();
+  const { signIn, allowSendEmail, isMutating: sendingEmail } = useAuth();
   const [verifyToken, challenge] = useCaptcha();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -58,11 +53,7 @@ export const SignInWithPassword: FC<AuthPanelProps> = ({
 
   const sendMagicLink = useAsyncCallback(async () => {
     if (allowSendEmail && verifyToken && !sendingEmail) {
-      const res = await signIn(email, verifyToken, challenge);
-      if (res?.status === 403 && res?.url === INTERNAL_BETA_URL) {
-        resetCountDown();
-        return setAuthState('noAccess');
-      }
+      await signIn(email, verifyToken, challenge);
       setAuthState('afterSignInSendEmail');
     }
   }, [
@@ -73,7 +64,6 @@ export const SignInWithPassword: FC<AuthPanelProps> = ({
     setAuthState,
     verifyToken,
     challenge,
-    resetCountDown,
   ]);
 
   const sendChangePasswordEmail = useCallback(() => {

@@ -8,7 +8,7 @@ import {
   WorkspacesService,
 } from '@toeverything/infra';
 import type { ReactElement } from 'react';
-import { Suspense, useEffect, useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { AffineErrorBoundary } from '../../components/affine/affine-error-boundary';
@@ -37,6 +37,7 @@ export const Component = (): ReactElement => {
 
   const params = useParams();
 
+  const [showNotFound, setShowNotFound] = useState(false);
   const workspacesService = useService(WorkspacesService);
   const listLoading = useLiveData(workspacesService.list.isLoading$);
   const workspaces = useLiveData(workspacesService.list.workspaces$);
@@ -47,6 +48,10 @@ export const Component = (): ReactElement => {
 
   const workspace = useWorkspace(meta);
   const globalContext = useService(GlobalContextService).globalContext;
+
+  useEffect(() => {
+    workspacesService.list.revalidate();
+  }, [workspacesService]);
 
   useEffect(() => {
     if (workspace) {
@@ -74,7 +79,17 @@ export const Component = (): ReactElement => {
     useLiveData(workspace?.engine.rootDocState$.map(v => v.ready)) ?? false;
 
   // if listLoading is false, we can show 404 page, otherwise we should show loading page.
-  if (listLoading === false && meta === undefined) {
+  useEffect(() => {
+    if (listLoading === false && meta === undefined) {
+      setShowNotFound(true);
+      workspacesService.list.revalidate();
+    }
+    if (meta) {
+      setShowNotFound(false);
+    }
+  }, [listLoading, meta, workspacesService]);
+
+  if (showNotFound) {
     return <PageNotFound noPermission />;
   }
   if (!workspace) {

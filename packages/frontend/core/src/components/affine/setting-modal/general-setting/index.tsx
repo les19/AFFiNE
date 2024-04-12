@@ -4,10 +4,11 @@ import {
   InformationIcon,
   KeyboardIcon,
 } from '@blocksuite/icons';
+import { useLiveData, useService } from '@toeverything/infra';
 import type { ReactElement, SVGProps } from 'react';
 
 import { useCurrentLoginStatus } from '../../../../hooks/affine/use-current-login-status';
-import { useServerFeatures } from '../../../../hooks/affine/use-server-config';
+import { AffineCloudServerConfigService } from '../../../../modules/cloud';
 import type { GeneralSettingKey } from '../types';
 import { AboutAffine } from './about';
 import { AppearanceSettings } from './appearance';
@@ -28,7 +29,10 @@ export type GeneralSettingList = GeneralSettingListItem[];
 export const useGeneralSettingList = (): GeneralSettingList => {
   const t = useAFFiNEI18N();
   const status = useCurrentLoginStatus();
-  const { payment: hasPaymentFeature } = useServerFeatures();
+  const serverConfig = useService(AffineCloudServerConfigService).serverConfig;
+  const hasPaymentFeature = useLiveData(
+    serverConfig.features$.map(f => f?.payment)
+  );
 
   const settings: GeneralSettingListItem[] = [
     {

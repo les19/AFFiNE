@@ -1,13 +1,11 @@
 import { Button } from '@affine/component/ui/button';
-import {
-  useOAuthProviders,
-  useServerFeatures,
-} from '@affine/core/hooks/affine/use-server-config';
 import { OAuthProviderType } from '@affine/graphql';
 import { GithubIcon, GoogleDuotoneIcon } from '@blocksuite/icons';
+import { useLiveData, useService } from '@toeverything/infra';
 import type { ReactElement } from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
+import { AffineCloudServerConfigService } from '../../../modules/cloud';
 import { mixpanel } from '../../../utils';
 import { useAuth } from './use-auth';
 
@@ -27,19 +25,22 @@ const OAuthProviderMap: Record<
 };
 
 export function OAuth() {
-  const { oauth } = useServerFeatures();
+  const serverConfig = useService(AffineCloudServerConfigService).serverConfig;
+  useEffect(() => {
+    // load server config
+    serverConfig.revalidateIfNeeded();
+  }, [serverConfig]);
+  const oauth = useLiveData(serverConfig.features$.map(r => r?.oauth));
+  const oauthProviders = useLiveData(
+    serverConfig.config$.map(r => r?.oauthProviders)
+  );
 
   if (!oauth) {
+    // TODO: loading & error UI
     return null;
   }
 
-  return <OAuthProviders />;
-}
-
-function OAuthProviders() {
-  const providers = useOAuthProviders();
-
-  return providers.map(provider => (
+  return oauthProviders?.map(provider => (
     <OAuthProvider key={provider} provider={provider} />
   ));
 }

@@ -1,21 +1,14 @@
 import { Button } from '@affine/component/ui/button';
 import { Tooltip } from '@affine/component/ui/tooltip';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import type {
-  Subscription,
-  SubscriptionMutator,
-} from '@affine/core/hooks/use-subscription';
+import { AffineCloudSubscriptionService } from '@affine/core/modules/cloud';
 import { popupWindow } from '@affine/core/utils';
 import type { SubscriptionRecurring } from '@affine/graphql';
-import {
-  createCheckoutSessionMutation,
-  SubscriptionPlan,
-  SubscriptionStatus,
-  updateSubscriptionMutation,
-} from '@affine/graphql';
+import { SubscriptionPlan, SubscriptionStatus } from '@affine/graphql';
 import { Trans } from '@affine/i18n';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
 import { DoneIcon } from '@blocksuite/icons';
+import { useLiveData, useService } from '@toeverything/infra';
 import { useAtom, useSetAtom } from 'jotai';
 import { nanoid } from 'nanoid';
 import type { PropsWithChildren } from 'react';
@@ -24,7 +17,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { openPaymentDisableAtom } from '../../../../../atoms';
 import { authAtom } from '../../../../../atoms/index';
 import { useCurrentLoginStatus } from '../../../../../hooks/affine/use-current-login-status';
-import { useMutation } from '../../../../../hooks/use-mutation';
 import { mixpanel } from '../../../../../utils';
 import { CancelAction, ResumeAction } from './actions';
 import type { DynamicPrice, FixedPrice } from './cloud-plans';
@@ -33,9 +25,7 @@ import * as styles from './style.css';
 
 interface PlanCardProps {
   detail: FixedPrice | DynamicPrice;
-  subscription?: Subscription | null;
   recurring: SubscriptionRecurring;
-  onSubscriptionUpdate: SubscriptionMutator;
   onNotify: (info: {
     detail: FixedPrice | DynamicPrice;
     recurring: string;
@@ -43,14 +33,18 @@ interface PlanCardProps {
 }
 
 export const PlanCard = (props: PlanCardProps) => {
-  const { detail, subscription, recurring } = props;
+  const { detail, recurring } = props;
   const loggedIn = useCurrentLoginStatus() === 'authenticated';
-  const currentPlan = subscription?.plan ?? SubscriptionPlan.Free;
+  const subscriptionService = useService(AffineCloudSubscriptionService);
+  const primarySubscription = useLiveData(
+    subscriptionService.subscription.primary$
+  );
+  const currentPlan = primarySubscription?.plan ?? SubscriptionPlan.Free;
 
   const isCurrent =
     loggedIn &&
     detail.plan === currentPlan &&
-    recurring === subscription?.recurring;
+    recurring === primarySubscription?.recurring;
   const isPro = detail.plan === SubscriptionPlan.Pro;
 
   return (
@@ -97,26 +91,20 @@ export const PlanCard = (props: PlanCardProps) => {
   );
 };
 
-const ActionButton = ({
-  detail,
-  subscription,
-  recurring,
-  onSubscriptionUpdate,
-  onNotify,
-}: PlanCardProps) => {
+const ActionButton = ({ detail, recurring, onNotify }: PlanCardProps) => {
   const t = useAFFiNEI18N();
   const loggedIn = useCurrentLoginStatus() === 'authenticated';
-  const currentPlan = subscription?.plan ?? SubscriptionPlan.Free;
-  const currentRecurring = subscription?.recurring;
-
-  const mutateAndNotify = useCallback(
-    (sub: Parameters<SubscriptionMutator>[0]) => {
-      mixpanel.track_forms('Subscription', detail.plan, sub);
-      onSubscriptionUpdate?.(sub);
-      onNotify?.({ detail, recurring });
-    },
-    [onSubscriptionUpdate, onNotify, detail, recurring]
+  const subscriptionService = useService(AffineCloudSubscriptionService);
+  const primarySubscription = useLiveData(
+    subscriptionService.subscription.primary$
   );
+  const currentPlan = primarySubscription?.plan ?? SubscriptionPlan.Free;
+  const currentRecurring = primarySubscription?.recurring;
+
+  const handleOnSuccess = useCallback(() => {
+    mixpanel.track_forms('Subscription', detail.plan);
+    onNotify?.({ detail, recurring });
+  }, [onNotify, detail, recurring]);
 
   // branches:
   //  if contact                                => 'Contact Sales'
@@ -148,42 +136,35 @@ const ActionButton = ({
     );
   }
 
-  const isCanceled = !!subscription?.canceledAt;
+  const isCanceled = !!primarySubscription?.canceledAt;
   const isFree = detail.plan === SubscriptionPlan.Free;
   const isCurrent =
     detail.plan === currentPlan &&
     (isFree
       ? true
       : currentRecurring === recurring &&
-        subscription?.status === SubscriptionStatus.Active);
+        primarySubscription?.status === SubscriptionStatus.Active);
 
   // is current
   if (isCurrent) {
-    return isCanceled ? (
-      <ResumeButton onSubscriptionUpdate={mutateAndNotify} />
-    ) : (
-      <CurrentPlan />
-    );
+    return isCanceled ? <ResumeButton /> : <CurrentPlan />;
   }
 
   if (isFree) {
-    return (
-      <Downgrade disabled={isCanceled} onSubscriptionUpdate={mutateAndNotify} />
-    );
+    return <Downgrade disabled={isCanceled} />;
   }
 
   return currentPlan === detail.plan ? (
     <ChangeRecurring
       from={currentRecurring as SubscriptionRecurring}
       to={recurring as SubscriptionRecurring}
-      due={subscription?.nextBillAt || ''}
-      onSubscriptionUpdate={mutateAndNotify}
+      due={primarySubscription?.nextBillAt || ''}
       disabled={isCanceled}
     />
   ) : (
     <Upgrade
       recurring={recurring as SubscriptionRecurring}
-      onSubscriptionUpdate={mutateAndNotify}
+      onSuccess={handleOnSuccess}
     />
   );
 };
@@ -197,13 +178,7 @@ const CurrentPlan = () => {
   );
 };
 
-const Downgrade = ({
-  disabled,
-  onSubscriptionUpdate,
-}: {
-  disabled?: boolean;
-  onSubscriptionUpdate: SubscriptionMutator;
-}) => {
+const Downgrade = ({ disabled }: { disabled?: boolean }) => {
   const t = useAFFiNEI18N();
   const [open, setOpen] = useState(false);
 
@@ -212,11 +187,7 @@ const Downgrade = ({
     : null;
 
   return (
-    <CancelAction
-      open={open}
-      onOpenChange={setOpen}
-      onSubscriptionUpdate={onSubscriptionUpdate}
-    >
+    <CancelAction open={open} onOpenChange={setOpen}>
       <Tooltip content={tooltipContent} rootOptions={{ delayDuration: 0 }}>
         <div className={styles.planAction}>
           <Button
@@ -268,15 +239,15 @@ const BookDemo = ({ plan }: { plan: SubscriptionPlan }) => {
 
 const Upgrade = ({
   recurring,
-  onSubscriptionUpdate,
+  onSuccess,
 }: {
   recurring: SubscriptionRecurring;
-  onSubscriptionUpdate: SubscriptionMutator;
+  onSuccess: () => void;
 }) => {
+  const [isMutating, setMutating] = useState(false);
   const t = useAFFiNEI18N();
-  const { isMutating, trigger } = useMutation({
-    mutation: createCheckoutSessionMutation,
-  });
+
+  const subscriptionService = useService(AffineCloudSubscriptionService);
 
   const newTabRef = useRef<Window | null>(null);
 
@@ -285,8 +256,9 @@ const Upgrade = ({
 
   const onClose = useCallback(() => {
     newTabRef.current = null;
-    onSubscriptionUpdate();
-  }, [onSubscriptionUpdate]);
+    subscriptionService.subscription.revalidate();
+    onSuccess();
+  }, [onSuccess, subscriptionService.subscription]);
 
   const [, openPaymentDisableModal] = useAtom(openPaymentDisableAtom);
   const upgrade = useAsyncCallback(async () => {
@@ -298,30 +270,30 @@ const Upgrade = ({
     if (newTabRef.current) {
       newTabRef.current.focus();
     } else {
-      await trigger(
-        {
-          input: {
-            recurring,
-            idempotencyKey,
-            plan: SubscriptionPlan.Pro, // Only support prod plan now.
-            coupon: null,
-            successCallbackLink: null,
-          },
-        },
-        {
-          onSuccess: data => {
-            const newTab = popupWindow(data.createCheckoutSession);
+      setMutating(true);
+      const link = await subscriptionService.createCheckoutSession({
+        recurring,
+        idempotencyKey,
+        plan: SubscriptionPlan.Pro, // Only support prod plan now.
+        coupon: null,
+        successCallbackLink: null,
+      });
+      setMutating(false);
+      const newTab = popupWindow(link);
 
-            if (newTab) {
-              newTabRef.current = newTab;
+      if (newTab) {
+        newTabRef.current = newTab;
 
-              newTab.addEventListener('close', onClose);
-            }
-          },
-        }
-      );
+        newTab.addEventListener('close', onClose);
+      }
     }
-  }, [openPaymentDisableModal, trigger, recurring, idempotencyKey, onClose]);
+  }, [
+    openPaymentDisableModal,
+    subscriptionService,
+    recurring,
+    idempotencyKey,
+    onClose,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -350,34 +322,25 @@ const ChangeRecurring = ({
   to,
   disabled,
   due,
-  onSubscriptionUpdate,
 }: {
   from: SubscriptionRecurring;
   to: SubscriptionRecurring;
   disabled?: boolean;
   due: string;
-  onSubscriptionUpdate: SubscriptionMutator;
 }) => {
   const t = useAFFiNEI18N();
   const [open, setOpen] = useState(false);
+  const [isMutating, setIsMutating] = useState(false);
   // allow replay request on network error until component unmount or success
   const [idempotencyKey, setIdempotencyKey] = useState(nanoid());
-  const { isMutating, trigger } = useMutation({
-    mutation: updateSubscriptionMutation,
-  });
+  const subscription = useService(AffineCloudSubscriptionService).subscription;
 
   const change = useAsyncCallback(async () => {
-    await trigger(
-      { recurring: to, idempotencyKey },
-      {
-        onSuccess: data => {
-          // refresh idempotency key
-          setIdempotencyKey(nanoid());
-          onSubscriptionUpdate(data.updateSubscriptionRecurring);
-        },
-      }
-    );
-  }, [trigger, to, idempotencyKey, onSubscriptionUpdate]);
+    setIsMutating(true);
+    await subscription.setSubscriptionRecurring(idempotencyKey, to);
+    setIdempotencyKey(nanoid());
+    setIsMutating(false);
+  }, [subscription, to, idempotencyKey]);
 
   const changeCurringContent = (
     <Trans values={{ from, to, due }} className={styles.downgradeContent}>
@@ -437,21 +400,13 @@ const SignUpAction = ({ children }: PropsWithChildren) => {
   );
 };
 
-const ResumeButton = ({
-  onSubscriptionUpdate,
-}: {
-  onSubscriptionUpdate: SubscriptionMutator;
-}) => {
+const ResumeButton = () => {
   const t = useAFFiNEI18N();
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
 
   return (
-    <ResumeAction
-      open={open}
-      onOpenChange={setOpen}
-      onSubscriptionUpdate={onSubscriptionUpdate}
-    >
+    <ResumeAction open={open} onOpenChange={setOpen}>
       <Button
         className={styles.planAction}
         onMouseEnter={() => setHovered(true)}

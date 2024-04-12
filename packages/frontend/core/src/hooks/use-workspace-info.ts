@@ -18,7 +18,7 @@ export function useWorkspaceInfo(meta: WorkspaceMetadata) {
   useEffect(() => {
     const profile = workspacesService.getProfile(meta);
 
-    profile.revalidate(true);
+    profile.revalidate();
 
     setProfile(profile);
   }, [meta, workspacesService]);

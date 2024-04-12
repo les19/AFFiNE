@@ -1,6 +1,12 @@
-export { CLOUD_WORKSPACE_CHANGED_BROADCAST_CHANNEL_KEY } from './impls/cloud';
-
-import { type Framework, WorkspaceFlavourProvider } from '@toeverything/infra';
+import {
+  AffineCloudAuthService,
+  AffineCloudGraphQLService,
+} from '@affine/core/modules/cloud';
+import {
+  type Framework,
+  GlobalState,
+  WorkspaceFlavourProvider,
+} from '@toeverything/infra';
 
 import { CloudWorkspaceFlavourProvider } from './impls/cloud';
 import { IndexedDBBlobStorage } from './impls/engine/blob-indexeddb';
@@ -19,7 +25,10 @@ export function configureBrowserWorkspaceFlavours(framework: Framework) {
       WorkspaceEngineStorageProvider,
     ])
     .impl(WorkspaceFlavourProvider('CLOUD'), CloudWorkspaceFlavourProvider, [
+      GlobalState,
+      AffineCloudAuthService,
       WorkspaceEngineStorageProvider,
+      AffineCloudGraphQLService,
     ]);
 }
 

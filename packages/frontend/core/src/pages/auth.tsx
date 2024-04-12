@@ -8,7 +8,6 @@ import {
   SignInSuccessPage,
   SignUpPage,
 } from '@affine/component/auth-components';
-import { useCredentialsRequirement } from '@affine/core/hooks/affine/use-server-config';
 import {
   changeEmailMutation,
   changePasswordMutation,
@@ -17,18 +16,19 @@ import {
   verifyEmailMutation,
 } from '@affine/graphql';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useLiveData, useService } from '@toeverything/infra';
 import type { ReactElement } from 'react';
 import { useCallback } from 'react';
 import type { LoaderFunction } from 'react-router-dom';
 import { redirect, useParams, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 
-import { SubscriptionRedirect } from '../components/affine/auth/subscription-redirect';
 import { WindowsAppControls } from '../components/pure/header/windows-app-controls';
 import { useCurrentLoginStatus } from '../hooks/affine/use-current-login-status';
 import { useCurrentUser } from '../hooks/affine/use-current-user';
 import { useMutation } from '../hooks/use-mutation';
 import { RouteLogic, useNavigateHelper } from '../hooks/use-navigate-helper';
+import { AffineCloudServerConfigService } from '../modules/cloud';
 
 const authTypeSchema = z.enum([
   'onboarding',
@@ -45,7 +45,10 @@ const authTypeSchema = z.enum([
 export const AuthPage = (): ReactElement | null => {
   const user = useCurrentUser();
   const t = useAFFiNEI18N();
-  const { password: passwordLimits } = useCredentialsRequirement();
+  const serverConfig = useService(AffineCloudServerConfigService).serverConfig;
+  const passwordLimits = useLiveData(
+    serverConfig.credentialsRequirement$.map(r => r?.password)
+  );
 
   const { authType } = useParams();
   const [searchParams] = useSearchParams();
@@ -96,6 +99,11 @@ export const AuthPage = (): ReactElement | null => {
   const onOpenAffine = useCallback(() => {
     jumpToIndex(RouteLogic.REPLACE);
   }, [jumpToIndex]);
+
+  if (!passwordLimits) {
+    // TODO: loading UI
+    return null;
+  }
 
   switch (authType) {
     case 'onboarding':
@@ -149,9 +157,6 @@ export const AuthPage = (): ReactElement | null => {
     }
     case 'confirm-change-email': {
       return <ConfirmChangeEmail onOpenAffine={onOpenAffine} />;
-    }
-    case 'subscription-redirect': {
-      return <SubscriptionRedirect />;
     }
     case 'verify-email': {
       return <ConfirmChangeEmail onOpenAffine={onOpenAffine} />;

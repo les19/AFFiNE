@@ -6,23 +6,23 @@ import {
 import { Button } from '@affine/component/ui/button';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import type { GetUserQuery } from '@affine/graphql';
-import { findGraphQLError, getUserQuery } from '@affine/graphql';
+import { getUserQuery } from '@affine/graphql';
 import { Trans } from '@affine/i18n';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
 import { ArrowDownBigIcon } from '@blocksuite/icons';
+import { useLiveData, useService } from '@toeverything/infra';
 import type { FC } from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { useCurrentLoginStatus } from '../../../hooks/affine/use-current-login-status';
 import { useMutation } from '../../../hooks/use-mutation';
+import { AffineCloudAuthService } from '../../../modules/cloud';
 import { mixpanel } from '../../../utils';
 import { emailRegex } from '../../../utils/email-regex';
 import type { AuthPanelProps } from './index';
 import { OAuth } from './oauth';
 import * as style from './style.css';
-import { INTERNAL_BETA_URL, useAuth } from './use-auth';
+import { useAuth } from './use-auth';
 import { Captcha, useCaptcha } from './use-captcha';
-import { useSubscriptionSearch } from './use-subscription';
 
 function validateEmail(email: string) {
   return emailRegex.test(email);
@@ -35,9 +35,18 @@ export const SignIn: FC<AuthPanelProps> = ({
   onSignedIn,
 }) => {
   const t = useAFFiNEI18N();
-  const loginStatus = useCurrentLoginStatus();
+  const session = useService(AffineCloudAuthService).session;
+  const loginStatus = useLiveData(session.status$);
+  useEffect(() => {
+    const timeout = setInterval(() => {
+      // revalidate session to get the latest status
+      session.revalidate(true);
+    }, 1000);
+    return () => {
+      clearInterval(timeout);
+    };
+  }, [session]);
   const [verifyToken, challenge] = useCaptcha();
-  const subscriptionData = useSubscriptionSearch();
 
   const {
     isMutating: isSigningIn,
@@ -71,33 +80,22 @@ export const SignIn: FC<AuthPanelProps> = ({
     const user: GetUserQuery['user'] | null | 0 = await verifyUser({ email })
       .then(({ user }) => user)
       .catch(err => {
-        if (findGraphQLError(err, e => e.extensions.code === 402)) {
-          setAuthState('noAccess');
-          return 0;
-        } else {
-          throw err;
-        }
+        throw err;
       });
 
-    if (user === 0) {
-      return;
-    }
     setAuthEmail(email);
 
     if (verifyToken) {
       if (user) {
         // provider password sign-in if user has by default
         //  If with payment, onl support email sign in to avoid redirect to affine app
-        if (user.hasPassword && !subscriptionData) {
+        if (user.hasPassword) {
           setAuthState('signInWithPassword');
         } else {
           mixpanel.track_forms('SignIn', 'Email', {
             email,
           });
-          const res = await signIn(email, verifyToken, challenge);
-          if (res?.status === 403 && res?.url === INTERNAL_BETA_URL) {
-            return setAuthState('noAccess');
-          }
+          await signIn(email, verifyToken, challenge);
           // TODO, should always get id from user
           if ('id' in user) {
             mixpanel.identify(user.id);
@@ -109,9 +107,7 @@ export const SignIn: FC<AuthPanelProps> = ({
         mixpanel.track_forms('SignUp', 'Email', {
           email,
         });
-        if (res?.status === 403 && res?.url === INTERNAL_BETA_URL) {
-          return setAuthState('noAccess');
-        } else if (!res || res.status >= 400) {
+        if (!res || res.status >= 400) {
           return;
         }
         setAuthState('afterSignUpSendEmail');
@@ -119,7 +115,6 @@ export const SignIn: FC<AuthPanelProps> = ({
     }
   }, [
     allowSendEmail,
-    subscriptionData,
     challenge,
     email,
     setAuthEmail,

@@ -3,7 +3,6 @@ import { useCurrentLoginStatus } from '@affine/core/hooks/affine/use-current-log
 import { useActiveBlocksuiteEditor } from '@affine/core/hooks/use-block-suite-editor';
 import { usePageDocumentTitle } from '@affine/core/hooks/use-global-state';
 import { WorkspaceFlavour } from '@affine/env/workspace';
-import { fetchWithTraceReport } from '@affine/graphql';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
 import { noop } from '@blocksuite/global/utils';
 import { Logo1Icon } from '@blocksuite/icons';
@@ -50,12 +49,7 @@ export async function downloadBinaryFromCloud(
   rootGuid: string,
   pageGuid: string
 ): Promise<CloudDoc | null> {
-  const response = await fetchWithTraceReport(
-    `/api/workspaces/${rootGuid}/docs/${pageGuid}`,
-    {
-      priority: 'high',
-    }
-  );
+  const response = await fetch(`/api/workspaces/${rootGuid}/docs/${pageGuid}`);
   if (response.ok) {
     const publishMode = (response.headers.get('publish-mode') ||
       'page') as DocPublishMode;

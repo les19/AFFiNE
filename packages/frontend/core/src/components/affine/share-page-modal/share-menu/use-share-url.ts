@@ -1,7 +1,9 @@
 import { toast } from '@affine/component';
-import { useServerBaseUrl } from '@affine/core/hooks/affine/use-server-config';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback, useMemo } from 'react';
+
+import { AffineCloudServerConfigService } from '../../../../modules/cloud';
 
 type UrlType = 'share' | 'workspace';
 
@@ -16,7 +18,9 @@ const useGenerateUrl = ({ workspaceId, pageId, urlType }: UseSharingUrl) => {
   // to generate a public url like https://app.affine.app/share/123/456
   // or https://app.affine.app/share/123/456?mode=edgeless
 
-  const baseUrl = useServerBaseUrl();
+  const serverConfig = useService(AffineCloudServerConfigService).serverConfig;
+
+  const baseUrl = useLiveData(serverConfig.config$.map(c => c?.baseUrl));
 
   const url = useMemo(() => {
     // baseUrl is null when running in electron and without network

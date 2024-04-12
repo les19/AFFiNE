@@ -13,32 +13,40 @@ import {
   openSettingModalAtom,
   openSignOutModalAtom,
 } from '@affine/core/atoms';
-import { useCloudStorageUsage } from '@affine/core/hooks/affine/use-cloud-storage-usage';
-import {
-  useCurrentUser,
-  useSession,
-} from '@affine/core/hooks/affine/use-current-user';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
 import {
   AccountIcon,
   ArrowRightSmallIcon,
   SignOutIcon,
 } from '@blocksuite/icons';
+import { useLiveData, useService } from '@toeverything/infra';
 import { assignInlineVars } from '@vanilla-extract/dynamic';
 import { useSetAtom } from 'jotai';
-import { Suspense, useCallback } from 'react';
+import { Suspense, useCallback, useEffect } from 'react';
 
+import {
+  type AffineCloudAuthAccountInfo,
+  AffineCloudAuthService,
+  AffineCloudUserQuotaService,
+} from '../../modules/cloud';
 import * as styles from './index.css';
 import { UnknownUserIcon } from './unknow-user';
 
 export const UserInfo = () => {
-  const { status } = useSession();
-  const isAuthenticated = status === 'authenticated';
-  return isAuthenticated ? <AuthorizedUserInfo /> : <UnauthorizedUserInfo />;
+  const session = useService(AffineCloudAuthService).session;
+  const account = useLiveData(session.account$);
+  return account ? (
+    <AuthorizedUserInfo account={account} />
+  ) : (
+    <UnauthorizedUserInfo />
+  );
 };
 
-const AuthorizedUserInfo = () => {
-  const user = useCurrentUser();
+const AuthorizedUserInfo = ({
+  account,
+}: {
+  account: AffineCloudAuthAccountInfo;
+}) => {
   return (
     <Menu items={<OperationMenu />}>
       <Button
@@ -46,7 +54,7 @@ const AuthorizedUserInfo = () => {
         type="plain"
         className={styles.userInfoWrapper}
       >
-        <Avatar size={24} name={user.name} url={user.avatarUrl} />
+        <Avatar size={24} name={account.label} url={account.avatar} />
       </Button>
     </Menu>
   );
@@ -131,7 +139,21 @@ const AccountMenu = () => {
 };
 
 const CloudUsage = () => {
-  const { color, usedText, maxLimitText, percent } = useCloudStorageUsage();
+  const quota = useService(AffineCloudUserQuotaService).quota;
+
+  useEffect(() => {
+    // revalidate quota to get the latest status
+    quota.revalidate();
+  }, [quota]);
+  const color = useLiveData(quota.color$);
+  const usedFormatted = useLiveData(quota.usedFormatted$);
+  const maxFormatted = useLiveData(quota.maxFormatted$);
+  const percent = useLiveData(quota.percent$);
+
+  if (percent === null) {
+    // TODO: loading UI
+    return null;
+  }
 
   return (
     <div
@@ -141,9 +163,9 @@ const CloudUsage = () => {
       })}
     >
       <div className={styles.cloudUsageLabel}>
-        <span className={styles.cloudUsageLabelUsed}>{usedText}</span>
+        <span className={styles.cloudUsageLabelUsed}>{usedFormatted}</span>
         <span>&nbsp;/&nbsp;</span>
-        <span>{maxLimitText}</span>
+        <span>{maxFormatted}</span>
       </div>
 
       <div className={styles.cloudUsageBar}>

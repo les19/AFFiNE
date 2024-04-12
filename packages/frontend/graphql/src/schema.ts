@@ -146,16 +146,6 @@ export interface UpdateWorkspaceInput {
   public: InputMaybe<Scalars['Boolean']['input']>;
 }
 
-export type CheckBlobSizesQueryVariables = Exact<{
-  workspaceId: Scalars['String']['input'];
-  size: Scalars['SafeInt']['input'];
-}>;
-
-export type CheckBlobSizesQuery = {
-  __typename?: 'Query';
-  checkBlobSize: { __typename?: 'WorkspaceBlobSizes'; size: number };
-};
-
 export type DeleteBlobMutationVariables = Exact<{
   workspaceId: Scalars['String']['input'];
   hash: Scalars['String']['input'];
@@ -178,22 +168,6 @@ export type SetBlobMutationVariables = Exact<{
 }>;
 
 export type SetBlobMutation = { __typename?: 'Mutation'; setBlob: string };
-
-export type BlobSizesQueryVariables = Exact<{
-  workspaceId: Scalars['String']['input'];
-}>;
-
-export type BlobSizesQuery = {
-  __typename?: 'Query';
-  workspace: { __typename?: 'WorkspaceType'; blobsSize: number };
-};
-
-export type AllBlobSizesQueryVariables = Exact<{ [key: string]: never }>;
-
-export type AllBlobSizesQuery = {
-  __typename?: 'Query';
-  collectAllBlobSizes: { __typename?: 'WorkspaceBlobSizes'; size: number };
-};
 
 export type CancelSubscriptionMutationVariables = Exact<{
   idempotencyKey: Scalars['String']['input'];
@@ -461,6 +435,7 @@ export type GetMembersByWorkspaceIdQuery = {
   __typename?: 'Query';
   workspace: {
     __typename?: 'WorkspaceType';
+    memberCount: number;
     members: Array<{
       __typename?: 'InviteUserType';
       id: string;
@@ -571,7 +546,11 @@ export type GetWorkspacesQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GetWorkspacesQuery = {
   __typename?: 'Query';
-  workspaces: Array<{ __typename?: 'WorkspaceType'; id: string }>;
+  workspaces: Array<{
+    __typename?: 'WorkspaceType';
+    id: string;
+    owner: { __typename?: 'UserType'; id: string };
+  }>;
 };
 
 export type ListHistoryQueryVariables = Exact<{
@@ -671,6 +650,11 @@ export type QuotaQuery = {
   __typename?: 'Query';
   currentUser: {
     __typename?: 'UserType';
+    id: string;
+    copilot: {
+      __typename?: 'Copilot';
+      quota: { __typename?: 'CopilotQuota'; limit: number; used: number };
+    };
     quota: {
       __typename?: 'UserQuota';
       name: string;
@@ -688,6 +672,7 @@ export type QuotaQuery = {
       };
     } | null;
   } | null;
+  collectAllBlobSizes: { __typename?: 'WorkspaceBlobSizes'; size: number };
 };
 
 export type RecoverDocMutationVariables = Exact<{
@@ -835,6 +820,7 @@ export type SubscriptionQuery = {
   __typename?: 'Query';
   currentUser: {
     __typename?: 'UserType';
+    id: string;
     subscriptions: Array<{
       __typename?: 'UserSubscription';
       id: string;
@@ -1018,24 +1004,9 @@ export type WorkspaceQuotaQuery = {
 
 export type Queries =
   | {
-      name: 'checkBlobSizesQuery';
-      variables: CheckBlobSizesQueryVariables;
-      response: CheckBlobSizesQuery;
-    }
-  | {
       name: 'listBlobsQuery';
       variables: ListBlobsQueryVariables;
       response: ListBlobsQuery;
-    }
-  | {
-      name: 'blobSizesQuery';
-      variables: BlobSizesQueryVariables;
-      response: BlobSizesQuery;
-    }
-  | {
-      name: 'allBlobSizesQuery';
-      variables: AllBlobSizesQueryVariables;
-      response: AllBlobSizesQuery;
     }
   | {
       name: 'earlyAccessUsersQuery';

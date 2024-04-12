@@ -7,7 +7,6 @@ import type { PropsWithChildren } from 'react';
 import { startTransition, useEffect, useRef } from 'react';
 
 import { useOnceSignedInEvents } from '../atoms/event';
-import { CLOUD_WORKSPACE_CHANGED_BROADCAST_CHANNEL_KEY } from '../modules/workspace-engine';
 import { mixpanel } from '../utils';
 
 export const CloudSessionProvider = (props: PropsWithChildren) => {
@@ -18,9 +17,6 @@ export const CloudSessionProvider = (props: PropsWithChildren) => {
 
   const refreshAfterSignedInEvents = useAsyncCallback(async () => {
     await onceSignedInEvents();
-    new BroadcastChannel(
-      CLOUD_WORKSPACE_CHANGED_BROADCAST_CHANNEL_KEY
-    ).postMessage(1);
   }, [onceSignedInEvents]);
 
   useEffect(() => {

@@ -9,7 +9,6 @@ import { PublicLinkDisableModal } from '@affine/component/disable-public-link';
 import { Button } from '@affine/component/ui/button';
 import { Menu, MenuItem, MenuTrigger } from '@affine/component/ui/menu';
 import { useIsSharedPage } from '@affine/core/hooks/affine/use-is-shared-page';
-import { useServerBaseUrl } from '@affine/core/hooks/affine/use-server-config';
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
 import { ArrowRightSmallIcon } from '@blocksuite/icons';
@@ -19,8 +18,10 @@ import {
   useLiveData,
   useService,
 } from '@toeverything/infra';
-import { useCallback, useMemo, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
+import { AffineCloudServerConfigService } from '../../../../modules/cloud';
 import { CloudSvg } from '../cloud-svg';
 import * as styles from './index.css';
 import type { ShareMenuProps } from './share-menu';
@@ -83,7 +84,8 @@ export const AffineSharePage = (props: ShareMenuProps) => {
     pageId: doc.id,
     urlType: 'share',
   });
-  const baseUrl = useServerBaseUrl();
+  const serverConfig = useService(AffineCloudServerConfigService).serverConfig;
+  const baseUrl = useLiveData(serverConfig.config$.map(c => c?.baseUrl));
   const t = useAFFiNEI18N();
 
   const onClickCreateLink = useCallback(() => {
@@ -108,6 +110,11 @@ export const AffineSharePage = (props: ShareMenuProps) => {
     [changeShare, isSharedPage]
   );
 
+  if (!baseUrl) {
+    // TODO: loading and error UI
+    return null;
+  }
+
   return (
     <>
       <div className={styles.titleContainerStyle}>
@@ -125,15 +132,7 @@ export const AffineSharePage = (props: ShareMenuProps) => {
             fontSize: 'var(--affine-font-xs)',
             lineHeight: '20px',
           }}
-          value={
-            (isSharedPage && sharingUrl) ||
-            `${
-              baseUrl ||
-              `${location.protocol}${
-                location.port ? `:${location.port}` : ''
-              }//${location.hostname}`
-            }/...`
-          }
+          value={(isSharedPage && sharingUrl) || `${baseUrl}/...`}
           readOnly
         />
         {isSharedPage ? (
@@ -237,7 +236,14 @@ export const SharePage = (props: ShareMenuProps) => {
   } else if (
     props.workspaceMetadata.flavour === WorkspaceFlavour.AFFINE_CLOUD
   ) {
-    return <AffineSharePage {...props} />;
+    return (
+      // TODO: refactor this part
+      <ErrorBoundary fallback={null}>
+        <Suspense>
+          <AffineSharePage {...props} />
+        </Suspense>
+      </ErrorBoundary>
+    );
   }
   throw new Error('Unreachable');
 };

@@ -7,20 +7,24 @@ import {
 } from '@affine/component/ui/menu';
 import { useCurrentUser } from '@affine/core/hooks/affine/use-current-user';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { useUserSubscription } from '@affine/core/hooks/use-subscription';
 import { signOutCloud } from '@affine/core/utils/cloud-utils';
-import { SubscriptionPlan } from '@affine/graphql';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
 import { SignOutIcon } from '@blocksuite/icons';
-import { useMemo } from 'react';
+import { useLiveData, useService } from '@toeverything/infra';
+import { useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
+import { AffineCloudSubscriptionService } from '../../../modules/cloud';
 import * as styles from './styles.css';
 
 const UserInfo = () => {
   const user = useCurrentUser();
-  const [subscription] = useUserSubscription();
-  const plan = subscription?.plan ?? SubscriptionPlan.Free;
+  const subscription = useService(AffineCloudSubscriptionService).subscription;
+  useEffect(() => {
+    subscription.revalidate();
+  }, [subscription]);
+  const primary = useLiveData(subscription.primary$);
+  const plan = primary?.plan;
   return (
     <div className={styles.accountCard}>
       <Avatar
@@ -35,7 +39,7 @@ const UserInfo = () => {
           <div className={styles.userName} title={user.name}>
             {user.name}
           </div>
-          <div className={styles.userPlanButton}>{plan}</div>
+          {plan && <div className={styles.userPlanButton}>{plan}</div>}
         </div>
         <div className={styles.userEmail} title={user.email}>
           {user.email}

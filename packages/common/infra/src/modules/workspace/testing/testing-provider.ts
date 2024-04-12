@@ -1,8 +1,10 @@
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import { DocCollection, nanoid } from '@blocksuite/store';
+import { map } from 'rxjs';
 import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 
 import { Service } from '../../../framework';
+import { LiveData } from '../../../livedata';
 import { wrapMemento } from '../../../storage';
 import { type BlobStorage, MemoryDocStorage } from '../../../sync';
 import { MemoryBlobStorage } from '../../../sync/blob/blob';
@@ -68,21 +70,12 @@ export class TestingWorkspaceLocalProvider
 
     return { id, flavour: WorkspaceFlavour.LOCAL };
   }
-  async getWorkspaces(): Promise<WorkspaceMetadata[]> {
-    return this.workspaceListStore.get<WorkspaceMetadata[]>('list') ?? [];
-  }
-  subscribeWorkspaces(
-    cb: (workspaces: WorkspaceMetadata[]) => void
-  ): () => void {
-    const subscription = this.workspaceListStore
+  workspaces$ = LiveData.from<WorkspaceMetadata[]>(
+    this.workspaceListStore
       .watch<WorkspaceMetadata[]>('list')
-      .subscribe(workspaces => {
-        if (workspaces) {
-          cb(workspaces);
-        }
-      });
-    return () => subscription.unsubscribe();
-  }
+      .pipe(map(m => m ?? [])),
+    []
+  );
   async getWorkspaceProfile(
     id: string
   ): Promise<WorkspaceProfileInfo | undefined> {
@@ -102,6 +95,7 @@ export class TestingWorkspaceLocalProvider
     return {
       name: bs.meta.name,
       avatar: bs.meta.avatar,
+      isOwner: true,
     };
   }
   getWorkspaceBlob(id: string, blob: string): Promise<Blob | null> {
