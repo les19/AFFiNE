@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaClient } from '@prisma/client';
 
-import { EventPayload } from '../../fundamentals';
+import type { EventPayload } from '../../fundamentals';
 import { SubscriptionPlan } from '../../plugins/payment/types';
 import { WorkspaceType } from '../workspaces/types';
 import { FeatureConfigType, getFeature } from './feature';
