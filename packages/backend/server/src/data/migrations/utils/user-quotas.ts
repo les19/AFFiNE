@@ -21,10 +21,10 @@ export async function upgradeQuotaVersion(
     });
 
     // find all users that have old free plan
-    const userIds = await db.user.findMany({
+    const userIds = await tx.user.findMany({
       where: {
         features: {
-          every: {
+          some: {
             feature: {
               type: FeatureKind.Quota,
               feature: quota.feature,
@@ -63,6 +63,16 @@ export async function upgradeQuotaVersion(
       })),
     });
   });
+}
+
+export async function upsertLatestQuotaVersion(
+  db: PrismaClient,
+  type: QuotaType
+) {
+  const quota = Quotas.filter(f => f.feature === type);
+  quota.sort((a, b) => b.version - a.version);
+  const latestQuota = quota[0];
+  await upsertFeature(db, latestQuota);
 }
 
 export async function upgradeLatestQuotaVersion(
