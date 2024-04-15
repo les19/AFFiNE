@@ -34,7 +34,7 @@ type CopilotHistories {
 }
 
 type CopilotQuota {
-  limit: SafeInt!
+  limit: SafeInt
   used: SafeInt!
 }
 

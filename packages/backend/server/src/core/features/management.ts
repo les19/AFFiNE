@@ -116,6 +116,7 @@ export class FeatureManagementService {
     return this.feature.listFeatureWorkspaces(feature);
   }
 
+  // ======== User Feature ========
   async getUserFeatures(userId: string): Promise<FeatureType[]> {
     const features = await this.feature.getUserFeatures(userId);
     const types = features.map(f => f.feature.name);

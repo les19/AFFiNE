@@ -3,6 +3,9 @@ import { randomUUID } from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
+import { FeatureManagementService, FeatureType } from '../../core/features';
+import { QuotaService } from '../../core/quota';
+import { PaymentRequiredException } from '../../fundamentals';
 import { ChatMessageCache } from './message';
 import { ChatPrompt, PromptService } from './prompt';
 import {
@@ -120,6 +123,8 @@ export class ChatSessionService {
 
   constructor(
     private readonly db: PrismaClient,
+    private readonly feature: FeatureManagementService,
+    private readonly quota: QuotaService,
     private readonly messageCache: ChatMessageCache,
     private readonly prompt: PromptService
   ) {}
@@ -345,6 +350,35 @@ export class ChatSessionService {
       .then(histories =>
         histories.filter((v): v is NonNullable<typeof v> => !!v)
       );
+  }
+
+  async getQuota(userId: string) {
+    const quota = await this.quota.getUserQuota(userId);
+    const hasCopilotFeature = await this.feature
+      .getUserFeatures(userId)
+      .then(f => f.includes(FeatureType.Copilot));
+    const limit = hasCopilotFeature
+      ? undefined
+      : quota.feature.copilotActionLimit;
+
+    const actions = await this.countUserActions(userId);
+    const chats = await this.listHistories(userId).then(histories =>
+      histories.reduce(
+        (acc, h) => acc + h.messages.filter(m => m.role === 'user').length,
+        0
+      )
+    );
+
+    return { limit, used: actions + chats };
+  }
+
+  async checkQuota(userId: string) {
+    const { limit, used } = await this.getQuota(userId);
+    if (limit && Number.isFinite(limit) && used >= limit) {
+      throw new PaymentRequiredException(
+        `You have reached the limit of actions in this workspace, please upgrade your plan.`
+      );
+    }
   }
 
   async create(options: ChatSessionOptions): Promise<string> {
