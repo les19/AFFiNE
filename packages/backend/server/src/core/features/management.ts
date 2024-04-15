@@ -118,12 +118,7 @@ export class FeatureManagementService {
 
   // ======== User Feature ========
   async getUserFeatures(userId: string): Promise<FeatureType[]> {
-    const features = await this.feature.getUserFeatures(userId);
-    const types = features.filter(f => f.activated).map(f => f.feature.name);
-    // todo(@darkskygit): remove this after support cascade feature
-    if (types.includes(FeatureType.EarlyAccess)) {
-      types.push(FeatureType.Copilot);
-    }
-    return types;
+    const features = await this.feature.getActivatedUserFeatures(userId);
+    return features.map(f => f.feature.name);
   }
 }

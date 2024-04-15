@@ -157,6 +157,38 @@ export class FeatureService {
     return configs.filter(feature => !!feature.feature);
   }
 
+  async getActivatedUserFeatures(userId: string) {
+    const features = await this.prisma.userFeatures.findMany({
+      where: {
+        user: { id: userId },
+        feature: {
+          type: FeatureKind.Feature,
+        },
+        expiredAt: {
+          gt: new Date(),
+        },
+        activated: true,
+        OR: [{ expiredAt: null }, { expiredAt: { gt: new Date() } }],
+      },
+      select: {
+        activated: true,
+        reason: true,
+        createdAt: true,
+        expiredAt: true,
+        featureId: true,
+      },
+    });
+
+    const configs = await Promise.all(
+      features.map(async feature => ({
+        ...feature,
+        feature: await getFeature(this.prisma, feature.featureId),
+      }))
+    );
+
+    return configs.filter(feature => !!feature.feature);
+  }
+
   async listFeatureUsers(feature: FeatureType) {
     return this.prisma.userFeatures
       .findMany({
