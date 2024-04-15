@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 import { FeatureKind } from '../../../core/features';
-import { Quotas } from '../../../core/quota/schema';
+import { getLatestQuota } from '../../../core/quota/schema';
 import { Quota, QuotaType } from '../../../core/quota/types';
 import { upsertFeature } from './user-features';
 
@@ -69,9 +69,7 @@ export async function upsertLatestQuotaVersion(
   db: PrismaClient,
   type: QuotaType
 ) {
-  const quota = Quotas.filter(f => f.feature === type);
-  quota.sort((a, b) => b.version - a.version);
-  const latestQuota = quota[0];
+  const latestQuota = getLatestQuota(type);
   await upsertFeature(db, latestQuota);
 }
 
@@ -80,8 +78,6 @@ export async function upgradeLatestQuotaVersion(
   type: QuotaType,
   reason: string
 ) {
-  const quota = Quotas.filter(f => f.feature === type);
-  quota.sort((a, b) => b.version - a.version);
-  const latestQuota = quota[0];
+  const latestQuota = getLatestQuota(type);
   await upgradeQuotaVersion(db, latestQuota, reason);
 }

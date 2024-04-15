@@ -157,6 +157,15 @@ export const Quotas: Quota[] = [
   },
 ];
 
+export function getLatestQuota(type: QuotaType) {
+  const quota = Quotas.filter(f => f.feature === type);
+  quota.sort((a, b) => b.version - a.version);
+  return quota[0];
+}
+
+export const FreePlan = getLatestQuota(QuotaType.FreePlanV1);
+export const ProPlan = getLatestQuota(QuotaType.ProPlanV1);
+
 export const Quota_FreePlanV1_1 = {
   feature: Quotas[5].feature,
   version: Quotas[5].version,
