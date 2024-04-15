@@ -386,7 +386,11 @@ export type GetCopilotQuotaQuery = {
     __typename?: 'UserType';
     copilot: {
       __typename?: 'Copilot';
-      quota: { __typename?: 'CopilotQuota'; limit: number; used: number };
+      quota: {
+        __typename?: 'CopilotQuota';
+        limit: number | null;
+        used: number;
+      };
     };
   } | null;
 };
