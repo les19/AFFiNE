@@ -54,8 +54,25 @@ async function addCopilotFeature(db: PrismaClient) {
         },
       })
       .then(u => u.map(u => u.userId));
+
+    const hasCopilotUserIds = await tx.userFeatures
+      .findMany({
+        where: {
+          userId: { in: userIds },
+          feature: {
+            feature: FeatureType.Copilot,
+          },
+        },
+        select: {
+          userId: true,
+        },
+      })
+      .then(u => u.map(u => u.userId));
+
+    const newUsers = userIds.filter(u => !hasCopilotUserIds.includes(u));
+
     await tx.userFeatures.createMany({
-      data: userIds.map(userId => ({
+      data: newUsers.map(userId => ({
         userId,
         featureId,
         reason: 'Early access bonus',
