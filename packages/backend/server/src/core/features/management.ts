@@ -35,7 +35,6 @@ export class FeatureManagementService {
     return this.feature.addUserFeature(
       userId,
       FeatureType.EarlyAccess,
-      2,
       'Early access user'
     );
   }

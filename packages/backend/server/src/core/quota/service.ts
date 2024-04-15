@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 import type { EventPayload } from '../../fundamentals';
 import { OnEvent, PrismaTransaction } from '../../fundamentals';
+import { SubscriptionPlan } from '../../plugins/payment/types';
 import { FeatureKind } from '../features';
 import { QuotaConfig } from './quota';
 import { QuotaType } from './types';
@@ -159,22 +160,36 @@ export class QuotaService {
   @OnEvent('user.subscription.activated')
   async onSubscriptionUpdated({
     userId,
+    plan,
   }: EventPayload<'user.subscription.activated'>) {
-    await this.switchUserQuota(
-      userId,
-      QuotaType.ProPlanV1,
-      'subscription activated'
-    );
+    switch (plan) {
+      case SubscriptionPlan.Pro:
+        await this.switchUserQuota(
+          userId,
+          QuotaType.ProPlanV1,
+          'subscription activated'
+        );
+        break;
+      default:
+        break;
+    }
   }
 
   @OnEvent('user.subscription.canceled')
-  async onSubscriptionCanceled(
-    userId: EventPayload<'user.subscription.canceled'>
-  ) {
-    await this.switchUserQuota(
-      userId,
-      QuotaType.FreePlanV1,
-      'subscription canceled'
-    );
+  async onSubscriptionCanceled({
+    userId,
+    plan,
+  }: EventPayload<'user.subscription.canceled'>) {
+    switch (plan) {
+      case SubscriptionPlan.Pro:
+        await this.switchUserQuota(
+          userId,
+          QuotaType.FreePlanV1,
+          'subscription canceled'
+        );
+        break;
+      default:
+        break;
+    }
   }
 }

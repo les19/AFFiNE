@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaClient } from '@prisma/client';
 
+import { EventPayload } from '../../fundamentals';
+import { SubscriptionPlan } from '../../plugins/payment/types';
 import { WorkspaceType } from '../workspaces/types';
 import { FeatureConfigType, getFeature } from './feature';
 import { FeatureKind, FeatureType } from './types';
@@ -59,11 +62,17 @@ export class FeatureService {
   async addUserFeature(
     userId: string,
     feature: FeatureType,
-    version: number,
     reason: string,
     expiredAt?: Date | string
   ) {
     return this.prisma.$transaction(async tx => {
+      const latestVersion = await tx.features
+        .aggregate({
+          where: { feature },
+          _max: { version: true },
+        })
+        .then(r => r._max.version || 1);
+
       const latestFlag = await tx.userFeatures.findFirst({
         where: {
           userId,
@@ -95,7 +104,7 @@ export class FeatureService {
                 connect: {
                   feature_version: {
                     feature,
-                    version,
+                    version: latestVersion,
                   },
                   type: FeatureKind.Feature,
                 },
@@ -369,5 +378,39 @@ export class FeatureService {
         },
       })
       .then(count => count > 0);
+  }
+
+  // ======== Event Handler ========
+
+  @OnEvent('user.subscription.activated')
+  async onSubscriptionUpdated({
+    userId,
+    plan,
+  }: EventPayload<'user.subscription.activated'>) {
+    switch (plan) {
+      case SubscriptionPlan.AI:
+        await this.addUserFeature(
+          userId,
+          FeatureType.UnlimitedCopilot,
+          'subscription activated'
+        );
+        break;
+      default:
+        break;
+    }
+  }
+
+  @OnEvent('user.subscription.canceled')
+  async onSubscriptionCanceled({
+    userId,
+    plan,
+  }: EventPayload<'user.subscription.canceled'>) {
+    switch (plan) {
+      case SubscriptionPlan.AI:
+        await this.removeUserFeature(userId, FeatureType.UnlimitedCopilot);
+        break;
+      default:
+        break;
+    }
   }
 }
