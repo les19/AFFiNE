@@ -123,8 +123,8 @@ class CopilotHistoriesType implements Partial<ChatHistory> {
 
 @ObjectType('CopilotQuota')
 class CopilotQuotaType {
-  @Field(() => SafeIntResolver)
-  limit!: number;
+  @Field(() => SafeIntResolver, { nullable: true })
+  limit?: number;
 
   @Field(() => SafeIntResolver)
   used!: number;
