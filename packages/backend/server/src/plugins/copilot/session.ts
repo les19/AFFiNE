@@ -355,7 +355,7 @@ export class ChatSessionService {
   async getQuota(userId: string) {
     const quota = await this.quota.getUserQuota(userId);
     const hasCopilotFeature = await this.feature
-      .getUserFeatures(userId)
+      .getActivatedUserFeatures(userId)
       .then(f => f.includes(FeatureType.UnlimitedCopilot));
     const limit = hasCopilotFeature
       ? undefined

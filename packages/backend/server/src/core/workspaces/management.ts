@@ -117,7 +117,7 @@ export class WorkspaceManagementResolver {
   async availableFeatures(
     @CurrentUser() user: CurrentUser
   ): Promise<FeatureType[]> {
-    return await this.feature.getUserFeatures(user.id);
+    return await this.feature.getActivatedUserFeatures(user.id);
   }
 
   @ResolveField(() => [FeatureType], {
