@@ -117,6 +117,44 @@ export const Quotas: Quota[] = [
       copilotActionLimit: 10,
     },
   },
+  {
+    feature: QuotaType.ProPlanV1,
+    type: FeatureKind.Quota,
+    version: 2,
+    configs: {
+      // quota name
+      name: 'Pro',
+      // single blob limit 100MB
+      blobLimit: 100 * OneMB,
+      // total blob limit 100GB
+      storageQuota: 100 * OneGB,
+      // history period of validity 30 days
+      historyPeriod: 30 * OneDay,
+      // member limit 10
+      memberLimit: 10,
+      // copilot action limit 10
+      copilotActionLimit: 10,
+    },
+  },
+  {
+    feature: QuotaType.RestrictedPlanV1,
+    type: FeatureKind.Quota,
+    version: 2,
+    configs: {
+      // quota name
+      name: 'Restricted',
+      // single blob limit 10MB
+      blobLimit: OneMB,
+      // total blob limit 1GB
+      storageQuota: 10 * OneMB,
+      // history period of validity 30 days
+      historyPeriod: 30 * OneDay,
+      // member limit 10
+      memberLimit: 10,
+      // copilot action limit 10
+      copilotActionLimit: 10,
+    },
+  },
 ];
 
 export const Quota_FreePlanV1_1 = {
@@ -125,6 +163,6 @@ export const Quota_FreePlanV1_1 = {
 };
 
 export const Quota_ProPlanV1 = {
-  feature: Quotas[1].feature,
-  version: Quotas[1].version,
+  feature: Quotas[6].feature,
+  version: Quotas[6].version,
 };
