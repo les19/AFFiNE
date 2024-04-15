@@ -84,6 +84,7 @@ type DocHistoryType {
 enum FeatureType {
   Copilot
   EarlyAccess
+  UnlimitedCopilot
   UnlimitedWorkspace
 }
 

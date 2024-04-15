@@ -62,6 +62,7 @@ export interface CreateCheckoutSessionInput {
 export enum FeatureType {
   Copilot = 'Copilot',
   EarlyAccess = 'EarlyAccess',
+  UnlimitedCopilot = 'UnlimitedCopilot',
   UnlimitedWorkspace = 'UnlimitedWorkspace',
 }
 

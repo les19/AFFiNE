@@ -31,7 +31,7 @@ async function addCopilotFeature(db: PrismaClient) {
     const featureId = await tx.features
       .findFirst({
         where: {
-          feature: FeatureType.Copilot,
+          feature: FeatureType.UnlimitedCopilot,
           version: 1,
         },
         select: { id: true },
@@ -60,7 +60,7 @@ async function addCopilotFeature(db: PrismaClient) {
         where: {
           userId: { in: userIds },
           feature: {
-            feature: FeatureType.Copilot,
+            feature: FeatureType.UnlimitedCopilot,
           },
         },
         select: {
