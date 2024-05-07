@@ -141,7 +141,11 @@ export class AuthResolver {
       validators.assertValidPassword(password);
   
       await this.auth.changePassword(user.id, password);
+
+      const authUser = await this.auth.signIn(email, password);
   
+      ctx.req.user = authUser;
+
       return user;
     }
 
