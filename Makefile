@@ -5,3 +5,9 @@ rebuild:
 	&& docker compose -f ./compose.yaml build --no-cache \
 	&& docker compose -f ./compose.yaml down \
 	&& docker compose -f ./compose.yaml up -d
+
+ps:
+	docker compose -f ./compose.yaml ps -a
+
+lgos:
+	docker compose -f ./compose.yaml logs -f
