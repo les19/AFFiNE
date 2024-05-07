@@ -64,12 +64,16 @@ export const AIUsagePanelNotSubscripted = () => {
   const [, mutateSubscription] = useUserSubscription();
   const { actionType, Action } = useAffineAISubscription();
 
-  const {
-    data: { prices },
-  } = useQuery({ query: pricesQuery });
-  const { data: quota } = useQuery({
-    query: getCopilotQuotaQuery,
-  });
+  const prices = [];
+  const quota = {
+    currentUser: null
+  };
+  // const {
+  //   data: { prices },
+  // } = useQuery({ query: pricesQuery });
+  // const { data: quota } = useQuery({
+  //   query: getCopilotQuotaQuery,
+  // });
   const { limit = 10, used = 0 } = quota.currentUser?.copilot.quota || {};
   const percent = Math.min(
     100,

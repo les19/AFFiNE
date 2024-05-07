@@ -255,9 +255,6 @@ export const AccountSetting: FC = () => {
             : t['com.affine.settings.password.action.set']()}
         </Button>
       </SettingRow>
-      <Suspense>
-        <StoragePanel />
-      </Suspense>
       <SWRErrorBoundary fallback={<div />}>
         <Suspense>
           <AIUsagePanel />

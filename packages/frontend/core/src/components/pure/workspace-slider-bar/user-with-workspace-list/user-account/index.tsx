@@ -12,7 +12,7 @@ export const UserAccountItem = ({
       <div className={styles.leftContainer}>
         <div className={styles.userEmail}>{email}</div>
       </div>
-      <UserPlanButton />
+      {/* <UserPlanButton /> */}
     </div>
   );
 };

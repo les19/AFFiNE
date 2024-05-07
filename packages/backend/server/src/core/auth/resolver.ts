@@ -129,6 +129,35 @@ export class AuthResolver {
     },
   })
   @Mutation(() => UserType)
+  async changePasswordByEmail(
+    @Context() ctx: { req: Request; res: Response },
+    @Args('email') email: string,
+    @Args('password') password: string
+  ) {
+    
+    const user = await this.user.findUserByEmail(email);
+
+    if (user) {
+      validators.assertValidPassword(password);
+  
+      await this.auth.changePassword(user.id, password);
+  
+      return user;
+    }
+
+    throw new BadRequestException(
+      `The email provided does not exist.`
+    );
+  }
+
+  @Public()
+  @Throttle({
+    default: {
+      limit: 10,
+      ttl: 60,
+    },
+  })
+  @Mutation(() => UserType)
   async signIn(
     @Context() ctx: { req: Request; res: Response },
     @Args('email') email: string,

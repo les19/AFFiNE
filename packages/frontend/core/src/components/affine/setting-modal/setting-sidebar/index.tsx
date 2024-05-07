@@ -62,7 +62,6 @@ export const UserInfo = ({
           <div className="name" title={user.name}>
             {user.name}
           </div>
-          <UserPlanButton />
         </div>
 
         <div className="email" title={user.email}>

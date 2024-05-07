@@ -42,10 +42,10 @@ export const appIconMap = {
 } satisfies Record<Channel, string>;
 
 export const appNames = {
-  stable: 'AFFiNE',
-  canary: 'AFFiNE Canary',
-  beta: 'AFFiNE Beta',
-  internal: 'AFFiNE Internal',
+  stable: 'Altertask',
+  canary: 'Altertask Canary',
+  beta: 'Altertask Beta',
+  internal: 'Altertask Internal',
 } satisfies Record<Channel, string>;
 
 interface OpenAppProps {
@@ -84,45 +84,6 @@ const OpenAppImpl = ({ urlToOpen, channel }: OpenAppProps) => {
         <a href="/" rel="noreferrer" className={styles.affineLogo}>
           <Logo1Icon width={24} height={24} />
         </a>
-
-        <div className={styles.topNavLinks}>
-          <a
-            href="https://affine.pro"
-            target="_blank"
-            rel="noreferrer"
-            className={styles.topNavLink}
-          >
-            Official Website
-          </a>
-          <a
-            href="https://community.affine.pro/home"
-            target="_blank"
-            rel="noreferrer"
-            className={styles.topNavLink}
-          >
-            AFFiNE Community
-          </a>
-          <a
-            href="https://affine.pro/blog"
-            target="_blank"
-            rel="noreferrer"
-            className={styles.topNavLink}
-          >
-            Blog
-          </a>
-          <a
-            href="https://affine.pro/about-us"
-            target="_blank"
-            rel="noreferrer"
-            className={styles.topNavLink}
-          >
-            Contact us
-          </a>
-        </div>
-
-        <Button onClick={openDownloadLink}>
-          {t['com.affine.auth.open.affine.download-app']()}
-        </Button>
       </div>
 
       <div className={styles.centerContent}>

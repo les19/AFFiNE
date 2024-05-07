@@ -42,11 +42,12 @@ const Settings = () => {
   const planDetail = useMemo(() => getPlanDetail(t), [t]);
   const scrollWrapper = useRef<HTMLDivElement>(null);
 
-  const {
-    data: { prices },
-  } = useQuery({
-    query: pricesQuery,
-  });
+  const prices = [];
+  // const {
+  //   data: { prices },
+  // } = useQuery({
+  //   query: pricesQuery,
+  // });
 
   prices.forEach(price => {
     const detail = planDetail.get(price.plan);

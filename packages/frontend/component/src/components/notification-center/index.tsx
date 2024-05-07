@@ -217,7 +217,7 @@ function NotificationCard(props: NotificationCardProps): ReactNode {
     }
     return;
   }, [notification.key, setHeights]);
-  return (
+  return false && (
     <Toast.Root
       className={clsx(styles.notificationStyle, {
         [styles.lightCollapseStyle[index === 1 ? 'secondary' : 'tertiary']]:

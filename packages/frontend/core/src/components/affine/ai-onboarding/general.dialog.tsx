@@ -69,7 +69,8 @@ export const AIOnboardingGeneral = ({
   const currentWorkspace = useLiveData(
     useService(CurrentWorkspaceService).currentWorkspace$
   );
-  const isCloud = currentWorkspace?.flavour === WorkspaceFlavour.AFFINE_CLOUD;
+  // const isCloud = currentWorkspace?.flavour === WorkspaceFlavour.AFFINE_CLOUD;
+  const isCloud = false;
   const t = useAFFiNEI18N();
   const [open, setOpen] = useState(true);
   const [index, setIndex] = useState(0);

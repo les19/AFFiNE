@@ -95,7 +95,7 @@ export const PlanLayout = ({ cloud, ai }: PlanLayoutProps) => {
         style={{ marginBottom: '0px' }}
         title={t['com.affine.payment.title']()}
       />
-      {cloud}
+      {/* {cloud}
       {ai ? (
         <>
           <Divider />
@@ -103,7 +103,7 @@ export const PlanLayout = ({ cloud, ai }: PlanLayoutProps) => {
             {ai}
           </div>
         </>
-      ) : null}
+      ) : null} */}
     </div>
   );
 };

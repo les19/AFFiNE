@@ -106,15 +106,6 @@ export const AboutAffine = () => {
             </SettingRow>
           </>
         ) : null}
-        <SettingRow
-          name={t['com.affine.telemetry.enable']()}
-          desc={t['com.affine.telemetry.enable.desc']()}
-        >
-          <Switch
-            checked={appSettings.enableTelemetry !== false}
-            onChange={onSwitchTelemetry}
-          />
-        </SettingRow>
       </SettingWrapper>
       <SettingWrapper title={t['com.affine.aboutAFFiNE.contact.title']()}>
         <a
@@ -136,7 +127,9 @@ export const AboutAffine = () => {
           <OpenInNewIcon className="icon" />
         </a>
       </SettingWrapper>
-      <SettingWrapper title={t['com.affine.aboutAFFiNE.community.title']()}>
+
+
+      {/* <SettingWrapper title={t['com.affine.aboutAFFiNE.community.title']()}>
         <div className={styles.communityWrapper}>
           {relatedLinks.map(({ icon, title, link }) => {
             return (
@@ -153,7 +146,9 @@ export const AboutAffine = () => {
             );
           })}
         </div>
-      </SettingWrapper>
+      </SettingWrapper> */}
+
+
       <SettingWrapper title={t['com.affine.aboutAFFiNE.legal.title']()}>
         <a
           className={styles.link}

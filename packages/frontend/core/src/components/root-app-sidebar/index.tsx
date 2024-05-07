@@ -20,7 +20,6 @@ import { useNavigateHelper } from '../../hooks/use-navigate-helper';
 import { Workbench } from '../../modules/workbench';
 import {
   AddPageButton,
-  AppDownloadButton,
   AppSidebar,
   appSidebarOpenAtom,
   CategoryDivider,
@@ -240,7 +239,6 @@ export const RootAppSidebar = ({
         </div>
       </SidebarScrollableContainer>
       <SidebarContainer>
-        {environment.isDesktop ? <UpdaterButton /> : <AppDownloadButton />}
         <div style={{ height: '4px' }} />
         <AddPageButton onClick={onClickNewPage} />
       </SidebarContainer>

@@ -10,7 +10,7 @@ export function useLanguageHelper() {
   );
   const languagesList = useMemo(
     () =>
-      LOCALES.map(item => ({
+      LOCALES.filter(item => item.name === 'English').map(item => ({
         tag: item.tag,
         originalName: item.originalName,
         name: item.name,

@@ -102,9 +102,12 @@ const SubscriptionSettings = () => {
     billingTip,
   } = useAffineAISubscription();
 
-  const { data: pricesQueryResult } = useQuery({
-    query: pricesQuery,
-  });
+  const pricesQueryResult = {
+    prices : []
+  };
+  // const { data: pricesQueryResult } = useQuery({
+  //   query: pricesQuery,
+  // });
 
   const plan = subscription?.plan ?? SubscriptionPlan.Free;
   const recurring = subscription?.recurring ?? SubscriptionRecurring.Monthly;
