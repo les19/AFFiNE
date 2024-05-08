@@ -9,5 +9,5 @@ rebuild:
 ps:
 	docker compose -f ./compose.yaml ps -a
 
-lgos:
+logs:
 	docker compose -f ./compose.yaml logs -f

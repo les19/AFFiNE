@@ -25,7 +25,7 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       enablePayment: false,
       enablePageHistory: true,
       allowLocalWorkspace: false,
-      serverUrlPrefix: '',
+      serverUrlPrefix: 'https://app.altertask.xyz',
       appVersion: packageJson.version,
       editorVersion: packageJson.devDependencies['@blocksuite/presets'],
       appBuildType: 'stable',
