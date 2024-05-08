@@ -14,7 +14,7 @@ export const SharePageNotFoundError = () => {
       }}
     >
       <a
-        href="https://affine.pro/"
+        href="https://altertask.xyz/"
         target="_blank"
         rel="noreferrer"
         style={{

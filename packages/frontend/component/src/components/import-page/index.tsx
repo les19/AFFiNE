@@ -39,19 +39,6 @@ export const ImportPage = ({
       }}
       icon={<CloseIcon />}
     />
-    <div className={importPageBodyStyle}>
-      <div className="title">Import</div>
-      <span>
-        AFFiNE will gradually support more and more file types for import.&nbsp;
-        <a
-          href="https://community.affine.pro/c/feature-requests/import-export"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Provide feedback.
-        </a>
-      </span>
-    </div>
     <div className={importPageButtonContainerStyle}>
       <BlockCard
         left={<ExportToMarkdownIcon width={20} height={20} />}
