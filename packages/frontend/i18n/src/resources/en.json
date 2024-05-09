@@ -464,6 +464,7 @@
   "com.affine.auth.sign.auth.code.send-email.sign-in": "Sign in with magic link",
   "com.affine.auth.sign.condition": "Terms of Conditions",
   "com.affine.auth.sign.email.continue": "Continue with Email",
+  "com.affine.auth.sign.email.purchase": "Purchase could access",
   "com.affine.auth.sign.email.error": "Invalid email",
   "com.affine.auth.sign.email.placeholder": "Enter your email address",
   "com.affine.auth.sign.in": "Sign in",

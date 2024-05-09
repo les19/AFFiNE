@@ -1,5 +1,6 @@
 import {
   AuthInput,
+  BackButton,
   CountDownRender,
   ModalHeader,
 } from '@affine/component/auth-components';
@@ -51,9 +52,14 @@ export const SignIn: FC<AuthPanelProps> = ({
     mutation: getUserQuery,
   });
   const [isValidEmail, setIsValidEmail] = useState(true);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   if (loginStatus === 'authenticated') {
     onSignedIn?.();
+  }
+
+  const onPurchase = () => {
+    window.location.href = 'https://altertask.xyz';
   }
 
   const onContinue = useAsyncCallback(async () => {
@@ -105,16 +111,14 @@ export const SignIn: FC<AuthPanelProps> = ({
           setAuthState('afterSignInSendEmail');
         }
       } else {
-        const res = await signUp(email, verifyToken, challenge);
-        mixpanel.track_forms('SignUp', 'Email', {
-          email,
-        });
-        if (res?.status === 403 && res?.url === INTERNAL_BETA_URL) {
-          return setAuthState('noAccess');
-        } else if (!res || res.status >= 400) {
-          return;
-        }
-        setAuthState('afterSignUpSendEmail');
+        setIsNewUser(true);
+        // const res = await signUp(email, verifyToken, challenge);
+        // if (res?.status === 403 && res?.url === INTERNAL_BETA_URL) {
+        //   return setAuthState('noAccess');
+        // } else if (!res || res.status >= 400) {
+        //   return;
+        // }
+        // setAuthState('afterSignUpSendEmail');
       }
     }
   }, [
@@ -159,7 +163,16 @@ export const SignIn: FC<AuthPanelProps> = ({
 
         {verifyToken ? null : <Captcha />}
 
-        {verifyToken ? (
+        {isNewUser ? <Button
+          type="primary"
+          size="extraLarge"
+          style={{ width: '100%' }}
+          onClick={onPurchase}
+        >
+          {t['com.affine.auth.sign.email.purchase']()}
+        </Button> : null}
+
+        {(verifyToken && !isNewUser) ? (
           <Button
             size="extraLarge"
             data-testid="continue-login-button"
@@ -194,10 +207,17 @@ export const SignIn: FC<AuthPanelProps> = ({
           {/*prettier-ignore*/}
           <Trans i18nKey="com.affine.auth.sign.message">
               By clicking &quot;Continue with Google/Email&quot; above, you acknowledge that
-              you agree to AFFiNE&apos;s <a href="https://affine.pro/terms" target="_blank" rel="noreferrer">Terms of Conditions</a> and <a href="https://affine.pro/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.
+              you agree to AFFiNE&apos;s <a href="https://altertask.xyz/terms-of-service" target="_blank" rel="noreferrer">Terms of Conditions</a> and <a href="https://altertask.xyz/privacy-policy" target="_blank" rel="noreferrer">Privacy Policy</a>.
           </Trans>
         </div>
       </div>
+
+      {
+        isNewUser ? 
+        <BackButton
+          onClick={() => {setIsNewUser(false)}}
+        /> : null
+      }
     </>
   );
 };
