@@ -97,18 +97,19 @@ export const SignIn: FC<AuthPanelProps> = ({
         if (user.hasPassword && !subscriptionData) {
           setAuthState('signInWithPassword');
         } else {
-          mixpanel.track_forms('SignIn', 'Email', {
-            email,
-          });
-          const res = await signIn(email, verifyToken, challenge);
-          if (res?.status === 403 && res?.url === INTERNAL_BETA_URL) {
-            return setAuthState('noAccess');
-          }
-          // TODO, should always get id from user
-          if ('id' in user) {
-            mixpanel.identify(user.id);
-          }
-          setAuthState('afterSignInSendEmail');
+          setIsNewUser(true);
+          // mixpanel.track_forms('SignIn', 'Email', {
+          //   email,
+          // });
+          // const res = await signIn(email, verifyToken, challenge);
+          // if (res?.status === 403 && res?.url === INTERNAL_BETA_URL) {
+          //   return setAuthState('noAccess');
+          // }
+          // // TODO, should always get id from user
+          // if ('id' in user) {
+          //   mixpanel.identify(user.id);
+          // }
+          // setAuthState('afterSignInSendEmail');
         }
       } else {
         setIsNewUser(true);
