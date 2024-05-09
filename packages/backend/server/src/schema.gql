@@ -207,6 +207,7 @@ type Mutation {
   revokePublicPage(pageId: String!, workspaceId: String!): WorkspacePage!
   sendChangeEmail(callbackUrl: String!, email: String): Boolean!
   sendChangePasswordEmail(callbackUrl: String!, email: String): Boolean!
+  changePasswordByEmail(email: String!, password: String!): UserType!
   sendSetPasswordEmail(callbackUrl: String!, email: String): Boolean!
   sendVerifyChangeEmail(callbackUrl: String!, email: String!, token: String!): Boolean!
   sendVerifyEmail(callbackUrl: String!): Boolean!
