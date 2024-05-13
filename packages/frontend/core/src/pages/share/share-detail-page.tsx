@@ -46,6 +46,7 @@ import { CurrentWorkspaceService } from '../../modules/workspace';
 import * as styles from './share-detail-page.css';
 import { ShareFooter } from './share-footer';
 import { ShareHeader } from './share-header';
+import { SmallLogoIcon } from '@affine/core/components/icons/smallLogoIcon';
 
 type DocPublishMode = 'edgeless' | 'page';
 
@@ -242,7 +243,7 @@ export const Component = () => {
                   <span className={styles.linkText}>
                     {t['com.affine.share-page.footer.built-with']()}
                   </span>
-                  <Logo1Icon fontSize={20} />
+                  <SmallLogoIcon fontSize={20} />
                 </a>
               ) : null}
             </div>

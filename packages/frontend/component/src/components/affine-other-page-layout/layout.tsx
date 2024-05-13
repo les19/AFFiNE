@@ -1,11 +1,11 @@
 import { Button } from '@affine/component/ui/button';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { Logo1Icon } from '@blocksuite/icons';
 import { useCallback } from 'react';
 
 import { DesktopNavbar } from './desktop-navbar';
 import * as styles from './index.css';
 import { MobileNavbar } from './mobile-navbar';
+import { SmallLogoIcon } from '../icons/smallLogoIcon';
 
 export const AffineOtherPageLayout = ({
   children,
@@ -23,7 +23,7 @@ export const AffineOtherPageLayout = ({
       {environment.isDesktop ? null : (
         <div className={styles.topNav}>
           <a href="/" rel="noreferrer" className={styles.affineLogo}>
-            <Logo1Icon width={24} height={24} />
+            <SmallLogoIcon width={24} height={24} />
           </a>
 
           <DesktopNavbar />

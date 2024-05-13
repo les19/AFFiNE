@@ -19,6 +19,7 @@ import { AddWorkspace } from './add-workspace';
 import * as styles from './index.css';
 import { UserAccountItem } from './user-account';
 import { AFFiNEWorkspaceList } from './workspace-list';
+import { SmallLogoIcon } from '@affine/core/components/icons/smallLogoIcon';
 
 export const SignInItem = () => {
   const setDisableCloudOpen = useSetAtom(openDisableCloudAlertModalAtom);
@@ -49,7 +50,7 @@ export const SignInItem = () => {
     >
       <div className={styles.signInWrapper}>
         <div className={styles.iconContainer}>
-          <Logo1Icon />
+          <SmallLogoIcon />
         </div>
 
         <div className={styles.signInTextContainer}>

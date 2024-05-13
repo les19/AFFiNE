@@ -10,6 +10,7 @@ import { useLoaderData, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 
 import * as styles from './open-app.css';
+import { SmallLogoIcon } from '../components/icons/smallLogoIcon';
 
 let lastOpened = '';
 
@@ -82,7 +83,7 @@ const OpenAppImpl = ({ urlToOpen, channel }: OpenAppProps) => {
     <div className={styles.root}>
       <div className={styles.topNav}>
         <a href="/" rel="noreferrer" className={styles.affineLogo}>
-          <Logo1Icon width={24} height={24} />
+          <SmallLogoIcon width={24} height={24} />
         </a>
       </div>
 

@@ -1,5 +1,6 @@
 import { Empty } from '@affine/component';
 import { Logo1Icon } from '@blocksuite/icons';
+import { SmallLogoIcon } from './icons/smallLogoIcon';
 
 export const SharePageNotFoundError = () => {
   return (
@@ -25,7 +26,7 @@ export const SharePageNotFoundError = () => {
           cursor: 'pointer',
         }}
       >
-        <Logo1Icon />
+        <SmallLogoIcon />
       </a>
       <Empty
         description={'You do not have access or this content does not exist.'}

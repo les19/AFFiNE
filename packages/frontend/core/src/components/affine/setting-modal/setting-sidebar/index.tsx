@@ -31,6 +31,7 @@ import { UserPlanButton } from '../../auth/user-plan-button';
 import { useGeneralSettingList } from '../general-setting';
 import type { ActiveTab, WorkspaceSubTab } from '../types';
 import * as style from './style.css';
+import { SmallLogoIcon } from '@affine/core/components/icons/smallLogoIcon';
 
 export type UserInfoProps = {
   onAccountSettingClick: () => void;
@@ -84,7 +85,7 @@ export const SignInButton = () => {
       }, [setAuthModal])}
     >
       <div className="avatar not-sign">
-        <Logo1Icon />
+        <SmallLogoIcon />
       </div>
 
       <div className="content">
