@@ -3,7 +3,7 @@ import type React from 'react';
 export const SmallLogoIcon = (props: React.SVGProps<SVGSVGElement>) => {
 
     return (
-        <svg width="156" height="156" viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="24" height="24" viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
             <g clip-path="url(#clip0_1_8)">
                 <rect width="156" height="156" rx="48" fill="#2B60E4" />
                 <path d="M61 92.5L86.5 118.5L183.5 22" stroke="white" stroke-opacity="0.16" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
