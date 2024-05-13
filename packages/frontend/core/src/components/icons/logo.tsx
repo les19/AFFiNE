@@ -1,8 +1,8 @@
 import type React from 'react';
-import { useDarkMode } from 'storybook-dark-mode';
+import { useTheme } from 'next-themes';
 
 export const HorizontalLogoIcon = (props: React.SVGProps<SVGSVGElement>) => {
-    const isDark = useDarkMode();
+    const theme = useTheme();
 
     return (
         <svg style={{
@@ -20,7 +20,7 @@ export const HorizontalLogoIcon = (props: React.SVGProps<SVGSVGElement>) => {
                     <stop offset="1" stop-color="#B6CBFF" />
                 </linearGradient>
                 <clipPath id="clip0_0_4">
-                    <rect width="156" height="156" rx="48" fill={isDark ? 'white' : 'black'} />
+                    <rect width="156" height="156" rx="48" fill={theme.resolvedTheme === 'dark' ? 'white' : 'black'} />
                 </clipPath>
             </defs>
         </svg>
