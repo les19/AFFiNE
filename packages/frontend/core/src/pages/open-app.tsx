@@ -36,7 +36,7 @@ const schemaToChanel = {
 } as Record<Schema, Channel>;
 
 export const appIconMap = {
-  stable: '/imgs/app-icon-stable.ico',
+  stable: '/imgs/app-icon-stable.png',
   canary: '/imgs/app-icon-canary.ico',
   beta: '/imgs/app-icon-beta.ico',
   internal: '/imgs/app-icon-internal.ico',
